@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+    <title>自定义金额投注系统</title>
+    <style>
+        :root { 
+            --primary-color: #e63946; 
+            --bg-color: #f8f9fa; 
+            --border-color: #e5e5e5; 
+        }
+        * { 
+            box-sizing: border-box; 
+            margin: 0; 
+            padding: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; 
+        }
+        body { 
+            background-color: var(--bg-color); 
+            padding-bottom: 120px; 
+            color: #333;
+            font-size: 14px;
+        }
+        
+        /* 顶部生肖按钮 - 自适应弹性布局 */
+        .zodiac-bar { 
+            display: grid; 
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 5px; 
+            padding: 10px; 
+            background: #fff; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            border-bottom: 1px solid var(--border-color); 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .zodiac-btn { 
+            background: #f1f3f5; 
+            border: 1px solid var(--border-color); 
+            padding: 8px 0; 
+            border-radius: 4px; 
+            font-size: 3.5vw; /* 视口自适应字体 */
+            text-align: center; 
+            cursor: pointer; 
+            font-weight: bold; 
+        }
+        @media (min-width: 600px) {
+            .zodiac-btn { font-size: 14px; } /* 电脑端大屏固定字体 */
+        }
+        .zodiac-btn:active { background: #e2e6ea; }
+
+        /* 号码网格 - 根据屏幕宽度自动计算列数 (手机端3列，平板/电脑端自动变多列) */
+        .number-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+            gap: 10px; 
+            padding: 15px; 
+        }
+        /* 针对超小屏幕设备保持至少3列布局 */
+        @media (max-width: 360px) {
+            .number-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; }
+        }
+        
+        .number-card { 
+            background: #fff; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            padding: 10px 4px; 
+            text-align: center; 
+            cursor: pointer; 
+            transition: 0.2s; 
+        }
+        .number-card.selected { border-color: var(--primary-color); background: #fff5f5; }
+        
+        /* 号码球与生肖组合 */
+        .ball-box { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; }
+        .ball { width: 30px; height: 30px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
+        .ball.red { background: #de2c3b; }
+        .ball.green { background: #28a745; }
+        .ball.blue { background: #007bff; }
+        .zodiac-tag { font-size: 12px; color: #666; font-weight: bold; }
+        
+        /* 金额输入框 */
+        .amount-input { width: 85%; max-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 13px; -webkit-appearance: none; }
+
+        /* 汇总区域 */
+        .summary-panel { margin: 15px; background: #fff; border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); }
+        .filter-controls { display: flex; gap: 8px; margin-bottom: 10px; }
+        .filter-btn { padding: 6px 14px; border: none; background: #eee; border-radius: 4px; cursor: pointer; font-size: 13px; }
+        .filter-btn.active { background: #333; color: #fff; }
+
+        .summary-list { max-height: 140px; overflow-y: auto; font-size: 13px; border: 1px solid #eee; padding: 5px; background: #fafafa; border-radius: 4px; }
+        .summary-item { display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px dashed #eee; }
+
+        /* 底部固定栏 - 响应式自适应 */
+        .footer-bar { 
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            right: 0; 
+            height: 70px; 
+            background: #333; 
+            color: #fff; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            padding: 0 20px; 
+            z-index: 100; 
+        }
+        .btn-reset { 
+            padding: 10px 24px; 
+            border-radius: 4px; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px; 
+            background: #6c757d; 
+            color: #fff; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部生肖快捷批量下注 -->
+    <div class="zodiac-bar" id="zodiacBar"></div>
+
+    <!-- 号码下注网格 -->
+    <div class="number-grid" id="numberGrid"></div>
+
+    <!-- 下注汇总与筛选 -->
+    <div class="summary-panel">
+        <div style="font-weight:bold; margin-bottom:10px; font-size: 15px; border-left: 4px solid var(--primary-color); padding-left: 8px;">下注实时汇总</div>
+        <div class="filter-controls">
+            <button class="filter-btn active" onclick="setFilter('all')">全部</button>
+            <button class="filter-btn" onclick="setFilter('odd')">单数</button>
+            <button class="filter-btn" onclick="setFilter('even')">双数</button>
+        </div>
+        <div class="summary-list" id="summaryList">请选择号码并输入金额</div>
+    </div>
+
+    <!-- 底部结算栏 -->
+    <div class="footer-bar">
+        <div>总金额: <span id="totalSum" style="color:#ffc107; font-size:22px; font-weight:bold;">0</span> 元</div>
+        <div>
+            <button class="btn-reset" onclick="resetAll()">重置</button>
+        </div>
+    </div>
+
+<script>
+    // 对应图2生肖规则
+    const zodiacRules = {
+        "鼠": [7, 19, 31, 43], "牛": [6, 18, 30, 42], "虎": [5, 17, 29, 41],
+        "兔": [4, 16, 28, 40], "龙": [3, 15, 27, 39], "蛇": [2, 14, 26, 38],
+        "马": [1, 13, 25, 37, 49], "羊": [12, 24, 36, 48], "猴": [11, 23, 35, 47],
+        "鸡": [10, 22, 34, 46], "狗": [9, 21, 33, 45], "猪": [8, 20, 32, 44]
+    };
+
+    const numToZodiac = {};
+    for (let zodiac in zodiacRules) {
+        zodiacRules[zodiac].forEach(num => {
+            numToZodiac[num] = zodiac;
+        });
+    }
+
+    let amounts = {}; 
+    let currentFilter = 'all';
+
+    function init() {
+        const zodiacBar = document.getElementById('zodiacBar');
+        const grid = document.getElementById('numberGrid');
+
+        Object.keys(zodiacRules).forEach(z => {
+            const btn = document.createElement('div');
+            btn.className = 'zodiac-btn'; 
+            btn.innerText = z;
+            btn.onclick = () => quickInputZodiac(z);
+            zodiacBar.appendChild(btn);
+        });
+
+        for (let i = 1; i <= 49; i++) {
+            amounts[i] = 0;
+            const card = document.createElement('div');
+            card.className = 'number-card';
+            card.id = `card-${i}`;
+            
+            const color = [1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46].includes(i) ? 'red' : ([3,4,9,10,14,15,20,25,26,31,36,41,42,47,48].includes(i) ? 'blue' : 'green');
+            const padNum = i < 10 ? '0' + i : i;
+            const zodiacName = numToZodiac[i];
+
+            card.innerHTML = `
+                <div class="ball-box">
+                    <div class="ball ${color}">${padNum}</div>
+                    <div class="zodiac-tag">(${zodiacName})</div>
+                </div>
+                <input type="number" class="amount-input" placeholder="金额" id="input-${i}" oninput="updateAmount(${i}, this.value)" onclick="event.stopPropagation()">
+            `;
+            card.onclick = () => document.getElementById(`input-${i}`).focus();
+            grid.appendChild(card);
+        }
+    }
+
+    function updateAmount(num, val) {
+        const amt = parseFloat(val) || 0;
+        amounts[num] = amt;
+        
+        const card = document.getElementById(`card-${num}`);
+        if (amt > 0) {
+            card.classList.add('selected');
+        } else {
+            card.classList.remove('selected');
+        }
+        calculate();
+    }
+
+    function quickInputZodiac(zodiac) {
+        const val = prompt(`请输入生肖【${zodiac}】所有对应号码的快捷下注金额：`, "");
+        if (val === null || val.trim() === "") return;
+        
+        const amt = parseFloat(val) || 0;
+        const nums = zodiacRules[zodiac];
+
+        nums.forEach(n => {
+            amounts[n] = amt;
+            const input = document.getElementById(`input-${n}`);
+            const card = document.getElementById(`card-${n}`);
+            
+            if (amt > 0) {
+                input.value = amt;
+                card.classList.add('selected');
+            } else {
+                input.value = '';
+                card.classList.remove('selected');
+            }
+        });
+        calculate();
+    }
+
+    function setFilter(f) {
+        currentFilter = f;
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            const isMatch = (f === 'all' && b.innerText === '全部') || 
+                            (f === 'odd' && b.innerText === '单数') || 
+                            (f === 'even' && b.innerText === '双数');
+            b.classList.toggle('active', isMatch);
+        });
+        calculate();
+    }
+
+    function calculate() {
+        let total = 0;
+        let html = '';
+        
+        for (let i = 1; i <= 49; i++) {
+            const isSelected = document.getElementById(`card-${i}`).classList.contains('selected');
+            if (!isSelected || amounts[i] <= 0) continue;
+
+            const isOdd = i % 2 !== 0;
+            if (currentFilter === 'odd' && !isOdd) continue;
+            if (currentFilter === 'even' && isOdd) continue;
+
+            total += amounts[i];
+            const padNum = i < 10 ? '0' + i : i;
+            html += `
+                <div class="summary-item">
+                    <span>号码 <strong>${padNum}</strong> (${numToZodiac[i]}) - ${isOdd ? '单数' : '双数'}</span>
+                    <span><strong>${amounts[i]}</strong> 元</span>
+                </div>
+            `;
+        }
+        document.getElementById('totalSum').innerText = total.toFixed(2);
+        document.getElementById('summaryList').innerHTML = html || '<div style="color:#999; text-align:center; padding:10px;">没有符合筛选条件的投注</div>';
+    }
+
+    function resetAll() {
+        amounts = {};
+        document.querySelectorAll('.number-card').forEach(c => {
+            c.classList.remove('selected');
+            c.querySelector('input').value = '';
+        });
+        calculate();
+    }
+
+    init();
+</script>
+</body>
+</html>
