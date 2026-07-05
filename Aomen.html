@@ -1,288 +1,307 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
-    <title>自定义金额投注系统</title>
-    <style>
-        :root { 
-            --primary-color: #e63946; 
-            --bg-color: #f8f9fa; 
-            --border-color: #e5e5e5; 
-        }
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif; 
-        }
-        body { 
-            background-color: var(--bg-color); 
-            padding-bottom: 120px; 
-            color: #333;
-            font-size: 14px;
-        }
-        
-        /* 顶部生肖按钮 - 自适应弹性布局 */
-        .zodiac-bar { 
-            display: grid; 
-            grid-template-columns: repeat(6, 1fr); 
-            gap: 5px; 
-            padding: 10px; 
-            background: #fff; 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            border-bottom: 1px solid var(--border-color); 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .zodiac-btn { 
-            background: #f1f3f5; 
-            border: 1px solid var(--border-color); 
-            padding: 8px 0; 
-            border-radius: 4px; 
-            font-size: 3.5vw; /* 视口自适应字体 */
-            text-align: center; 
-            cursor: pointer; 
-            font-weight: bold; 
-        }
-        @media (min-width: 600px) {
-            .zodiac-btn { font-size: 14px; } /* 电脑端大屏固定字体 */
-        }
-        .zodiac-btn:active { background: #e2e6ea; }
-
-        /* 号码网格 - 根据屏幕宽度自动计算列数 (手机端3列，平板/电脑端自动变多列) */
-        .number-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
-            gap: 10px; 
-            padding: 15px; 
-        }
-        /* 针对超小屏幕设备保持至少3列布局 */
-        @media (max-width: 360px) {
-            .number-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; }
-        }
-        
-        .number-card { 
-            background: #fff; 
-            border: 1px solid var(--border-color); 
-            border-radius: 8px; 
-            padding: 10px 4px; 
-            text-align: center; 
-            cursor: pointer; 
-            transition: 0.2s; 
-        }
-        .number-card.selected { border-color: var(--primary-color); background: #fff5f5; }
-        
-        /* 号码球与生肖组合 */
-        .ball-box { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; }
-        .ball { width: 30px; height: 30px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
-        .ball.red { background: #de2c3b; }
-        .ball.green { background: #28a745; }
-        .ball.blue { background: #007bff; }
-        .zodiac-tag { font-size: 12px; color: #666; font-weight: bold; }
-        
-        /* 金额输入框 */
-        .amount-input { width: 85%; max-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 13px; -webkit-appearance: none; }
-
-        /* 汇总区域 */
-        .summary-panel { margin: 15px; background: #fff; border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); }
-        .filter-controls { display: flex; gap: 8px; margin-bottom: 10px; }
-        .filter-btn { padding: 6px 14px; border: none; background: #eee; border-radius: 4px; cursor: pointer; font-size: 13px; }
-        .filter-btn.active { background: #333; color: #fff; }
-
-        .summary-list { max-height: 140px; overflow-y: auto; font-size: 13px; border: 1px solid #eee; padding: 5px; background: #fafafa; border-radius: 4px; }
-        .summary-item { display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px dashed #eee; }
-
-        /* 底部固定栏 - 响应式自适应 */
-        .footer-bar { 
-            position: fixed; 
-            bottom: 0; 
-            left: 0; 
-            right: 0; 
-            height: 70px; 
-            background: #333; 
-            color: #fff; 
-            display: flex; 
-            align-items: center; 
-            justify-content: space-between; 
-            padding: 0 20px; 
-            z-index: 100; 
-        }
-        .btn-reset { 
-            padding: 10px 24px; 
-            border-radius: 4px; 
-            border: none; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 14px; 
-            background: #6c757d; 
-            color: #fff; 
-        }
-    </style>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.6">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.1px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.1px Helvetica; min-height: 16.0px}
+    p.p3 {margin: 0.0px 0.0px 0.0px 0.0px; font: 13.1px '.PingFang SC'}
+    span.s1 {font: 13.1px '.PingFang SC'}
+    span.s2 {font: 13.1px Helvetica}
+  </style>
 </head>
 <body>
-
-    <!-- 顶部生肖快捷批量下注 -->
-    <div class="zodiac-bar" id="zodiacBar"></div>
-
-    <!-- 号码下注网格 -->
-    <div class="number-grid" id="numberGrid"></div>
-
-    <!-- 下注汇总与筛选 -->
-    <div class="summary-panel">
-        <div style="font-weight:bold; margin-bottom:10px; font-size: 15px; border-left: 4px solid var(--primary-color); padding-left: 8px;">下注实时汇总</div>
-        <div class="filter-controls">
-            <button class="filter-btn active" onclick="setFilter('all')">全部</button>
-            <button class="filter-btn" onclick="setFilter('odd')">单数</button>
-            <button class="filter-btn" onclick="setFilter('even')">双数</button>
-        </div>
-        <div class="summary-list" id="summaryList">请选择号码并输入金额</div>
-    </div>
-
-    <!-- 底部结算栏 -->
-    <div class="footer-bar">
-        <div>总金额: <span id="totalSum" style="color:#ffc107; font-size:22px; font-weight:bold;">0</span> 元</div>
-        <div>
-            <button class="btn-reset" onclick="resetAll()">重置</button>
-        </div>
-    </div>
-
-<script>
-    // 对应图2生肖规则
-    const zodiacRules = {
-        "鼠": [7, 19, 31, 43], "牛": [6, 18, 30, 42], "虎": [5, 17, 29, 41],
-        "兔": [4, 16, 28, 40], "龙": [3, 15, 27, 39], "蛇": [2, 14, 26, 38],
-        "马": [1, 13, 25, 37, 49], "羊": [12, 24, 36, 48], "猴": [11, 23, 35, 47],
-        "鸡": [10, 22, 34, 46], "狗": [9, 21, 33, 45], "猪": [8, 20, 32, 44]
-    };
-
-    const numToZodiac = {};
-    for (let zodiac in zodiacRules) {
-        zodiacRules[zodiac].forEach(num => {
-            numToZodiac[num] = zodiac;
-        });
-    }
-
-    let amounts = {}; 
-    let currentFilter = 'all';
-
-    function init() {
-        const zodiacBar = document.getElementById('zodiacBar');
-        const grid = document.getElementById('numberGrid');
-
-        Object.keys(zodiacRules).forEach(z => {
-            const btn = document.createElement('div');
-            btn.className = 'zodiac-btn'; 
-            btn.innerText = z;
-            btn.onclick = () => quickInputZodiac(z);
-            zodiacBar.appendChild(btn);
-        });
-
-        for (let i = 1; i <= 49; i++) {
-            amounts[i] = 0;
-            const card = document.createElement('div');
-            card.className = 'number-card';
-            card.id = `card-${i}`;
-            
-            const color = [1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46].includes(i) ? 'red' : ([3,4,9,10,14,15,20,25,26,31,36,41,42,47,48].includes(i) ? 'blue' : 'green');
-            const padNum = i < 10 ? '0' + i : i;
-            const zodiacName = numToZodiac[i];
-
-            card.innerHTML = `
-                <div class="ball-box">
-                    <div class="ball ${color}">${padNum}</div>
-                    <div class="zodiac-tag">(${zodiacName})</div>
-                </div>
-                <input type="number" class="amount-input" placeholder="金额" id="input-${i}" oninput="updateAmount(${i}, this.value)" onclick="event.stopPropagation()">
-            `;
-            card.onclick = () => document.getElementById(`input-${i}`).focus();
-            grid.appendChild(card);
-        }
-    }
-
-    function updateAmount(num, val) {
-        const amt = parseFloat(val) || 0;
-        amounts[num] = amt;
-        
-        const card = document.getElementById(`card-${num}`);
-        if (amt > 0) {
-            card.classList.add('selected');
-        } else {
-            card.classList.remove('selected');
-        }
-        calculate();
-    }
-
-    function quickInputZodiac(zodiac) {
-        const val = prompt(`请输入生肖【${zodiac}】所有对应号码的快捷下注金额：`, "");
-        if (val === null || val.trim() === "") return;
-        
-        const amt = parseFloat(val) || 0;
-        const nums = zodiacRules[zodiac];
-
-        nums.forEach(n => {
-            amounts[n] = amt;
-            const input = document.getElementById(`input-${n}`);
-            const card = document.getElementById(`card-${n}`);
-            
-            if (amt > 0) {
-                input.value = amt;
-                card.classList.add('selected');
-            } else {
-                input.value = '';
-                card.classList.remove('selected');
-            }
-        });
-        calculate();
-    }
-
-    function setFilter(f) {
-        currentFilter = f;
-        document.querySelectorAll('.filter-btn').forEach(b => {
-            const isMatch = (f === 'all' && b.innerText === '全部') || 
-                            (f === 'odd' && b.innerText === '单数') || 
-                            (f === 'even' && b.innerText === '双数');
-            b.classList.toggle('active', isMatch);
-        });
-        calculate();
-    }
-
-    function calculate() {
-        let total = 0;
-        let html = '';
-        
-        for (let i = 1; i <= 49; i++) {
-            const isSelected = document.getElementById(`card-${i}`).classList.contains('selected');
-            if (!isSelected || amounts[i] <= 0) continue;
-
-            const isOdd = i % 2 !== 0;
-            if (currentFilter === 'odd' && !isOdd) continue;
-            if (currentFilter === 'even' && isOdd) continue;
-
-            total += amounts[i];
-            const padNum = i < 10 ? '0' + i : i;
-            html += `
-                <div class="summary-item">
-                    <span>号码 <strong>${padNum}</strong> (${numToZodiac[i]}) - ${isOdd ? '单数' : '双数'}</span>
-                    <span><strong>${amounts[i]}</strong> 元</span>
-                </div>
-            `;
-        }
-        document.getElementById('totalSum').innerText = total.toFixed(2);
-        document.getElementById('summaryList').innerHTML = html || '<div style="color:#999; text-align:center; padding:10px;">没有符合筛选条件的投注</div>';
-    }
-
-    function resetAll() {
-        amounts = {};
-        document.querySelectorAll('.number-card').forEach(c => {
-            c.classList.remove('selected');
-            c.querySelector('input').value = '';
-        });
-        calculate();
-    }
-
-    init();
-</script>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="zh-CN"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;<span class="s1">自定义金额投注系统</span>&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>:root {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>--primary-color: #e63946;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>--bg-color: #f8f9fa;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>--border-color: #e5e5e5;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>* {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-sizing: border-box;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>margin: 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background-color: var(--bg-color);<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding-bottom: 120px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #333;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* <span class="s1">顶部生肖按钮</span> - <span class="s1">自适应弹性布局</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.zodiac-bar {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: grid;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: repeat(6, 1fr);<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>gap: 5px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #fff;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>position: sticky;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>top: 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>z-index: 100;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-bottom: 1px solid var(--border-color);<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>box-shadow: 0 2px 4px rgba(0,0,0,0.02);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.zodiac-btn {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #f1f3f5;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--border-color);<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 8px 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 4px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 3.5vw; /* <span class="s1">视口自适应字体</span> */</p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>@media (min-width: 600px) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>.zodiac-btn { font-size: 14px; } /* <span class="s1">电脑端大屏固定字体</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.zodiac-btn:active { background: #e2e6ea; }</p>
+<p class="p2"><br></p>
+<p class="p3"><span class="s2"><span class="Apple-converted-space">        </span>/* </span>号码网格<span class="s2"> - </span>根据屏幕宽度自动计算列数<span class="s2"> (</span>手机端<span class="s2">3</span>列，平板<span class="s2">/</span>电脑端自动变多列<span class="s2">) */</span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.number-grid {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: grid;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>gap: 10px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 15px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* <span class="s1">针对超小屏幕设备保持至少</span>3<span class="s1">列布局</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>@media (max-width: 360px) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>.number-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.number-card {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #fff;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: 1px solid var(--border-color);<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 8px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px 4px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>text-align: center;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>transition: 0.2s;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.number-card.selected { border-color: var(--primary-color); background: #fff5f5; }</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* <span class="s1">号码球与生肖组合</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ball-box { display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 8px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ball { width: 30px; height: 30px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ball.red { background: #de2c3b; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ball.green { background: #28a745; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.ball.blue { background: #007bff; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.zodiac-tag { font-size: 12px; color: #666; font-weight: bold; }</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* <span class="s1">金额输入框</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.amount-input { width: 85%; max-width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 4px; text-align: center; font-size: 13px; -webkit-appearance: none; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* <span class="s1">汇总区域</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.summary-panel { margin: 15px; background: #fff; border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.filter-controls { display: flex; gap: 8px; margin-bottom: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.filter-btn { padding: 6px 14px; border: none; background: #eee; border-radius: 4px; cursor: pointer; font-size: 13px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.filter-btn.active { background: #333; color: #fff; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>.summary-list { max-height: 140px; overflow-y: auto; font-size: 13px; border: 1px solid #eee; padding: 5px; background: #fafafa; border-radius: 4px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.summary-item { display: flex; justify-content: space-between; padding: 6px 4px; border-bottom: 1px dashed #eee; }</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>/* <span class="s1">底部固定栏</span> - <span class="s1">响应式自适应</span> */</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.footer-bar {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>position: fixed;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>bottom: 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>left: 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>right: 0;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>height: 70px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #333;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #fff;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>display: flex;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>align-items: center;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>justify-content: space-between;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 0 20px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>z-index: 100;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.btn-reset {<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>padding: 10px 24px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border-radius: 4px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>border: none;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-weight: bold;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>cursor: pointer;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>font-size: 14px;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>background: #6c757d;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>color: #fff;<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">顶部生肖快捷批量下注</span> --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="zodiac-bar" id="zodiacBar"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">号码下注网格</span> --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="number-grid" id="numberGrid"&gt;&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">下注汇总与筛选</span> --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="summary-panel"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div style="font-weight:bold; margin-bottom:10px; font-size: 15px; border-left: 4px solid var(--primary-color); padding-left: 8px;"&gt;<span class="s1">下注实时汇总</span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="filter-controls"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="filter-btn active" onclick="setFilter('all')"&gt;<span class="s1">全部</span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="filter-btn" onclick="setFilter('odd')"&gt;<span class="s1">单数</span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="filter-btn" onclick="setFilter('even')"&gt;<span class="s1">双数</span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="summary-list" id="summaryList"&gt;<span class="s1">请选择号码并输入金额</span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;!-- <span class="s1">底部结算栏</span> --&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="footer-bar"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;<span class="s1">总金额</span>: &lt;span id="totalSum" style="color:#ffc107; font-size:22px; font-weight:bold;"&gt;0&lt;/span&gt; <span class="s1">元</span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>&lt;button class="btn-reset" onclick="resetAll()"&gt;<span class="s1">重置</span>&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>// <span class="s1">对应图</span>2<span class="s1">生肖规则</span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const zodiacRules = {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"<span class="s1">鼠</span>": <span class="s1">[</span>7, 19, 31, 43<span class="s1">]</span>, "<span class="s1">牛</span>": <span class="s1">[</span>6, 18, 30, 42<span class="s1">]</span>, "<span class="s1">虎</span>": <span class="s1">[</span>5, 17, 29, 41<span class="s1">]</span>,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"<span class="s1">兔</span>": <span class="s1">[</span>4, 16, 28, 40<span class="s1">]</span>, "<span class="s1">龙</span>": <span class="s1">[</span>3, 15, 27, 39<span class="s1">]</span>, "<span class="s1">蛇</span>": <span class="s1">[</span>2, 14, 26, 38<span class="s1">]</span>,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"<span class="s1">马</span>": <span class="s1">[</span>1, 13, 25, 37, 49<span class="s1">]</span>, "<span class="s1">羊</span>": <span class="s1">[</span>12, 24, 36, 48<span class="s1">]</span>, "<span class="s1">猴</span>": <span class="s1">[</span>11, 23, 35, 47<span class="s1">]</span>,</p>
+<p class="p1"><span class="Apple-converted-space">        </span>"<span class="s1">鸡</span>": <span class="s1">[</span>10, 22, 34, 46<span class="s1">]</span>, "<span class="s1">狗</span>": <span class="s1">[</span>9, 21, 33, 45<span class="s1">]</span>, "<span class="s1">猪</span>": <span class="s1">[</span>8, 20, 32, 44<span class="s1">]</span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>};</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>const numToZodiac = {};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>for (let zodiac in zodiacRules) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>zodiacRules<span class="s1">[</span>zodiac<span class="s1">]</span>.forEach(num =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>numToZodiac<span class="s1">[</span>num<span class="s1">]</span> = zodiac;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>let amounts = {};<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>let currentFilter = 'all';</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function init() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const zodiacBar = document.getElementById('zodiacBar');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const grid = document.getElementById('numberGrid');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>Object.keys(zodiacRules).forEach(z =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const btn = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.className = 'zodiac-btn';<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.innerText = z;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>btn.onclick = () =&gt; quickInputZodiac(z);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>zodiacBar.appendChild(btn);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>for (let i = 1; i &lt;= 49; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>amounts<span class="s1">[</span>i<span class="s1">]</span> = 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const card = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>card.className = 'number-card';</p>
+<p class="p1"><span class="Apple-converted-space">            </span>card.id = `card-${i}`;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const color = <span class="s1">[</span>1,2,7,8,12,13,18,19,23,24,29,30,34,35,40,45,46<span class="s1">]</span>.includes(i) ? 'red' : (<span class="s1">[</span>3,4,9,10,14,15,20,25,26,31,36,41,42,47,48<span class="s1">]</span>.includes(i) ? 'blue' : 'green');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const padNum = i &lt; 10 ? '0' + i : i;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const zodiacName = numToZodiac<span class="s1">[</span>i<span class="s1">]</span>;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>card.innerHTML = `</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="ball-box"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="ball ${color}"&gt;${padNum}&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;div class="zodiac-tag"&gt;(${zodiacName})&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;input type="number" class="amount-input" placeholder="<span class="s1">金额</span>" id="input-${i}" oninput="updateAmount(${i}, this.value)" onclick="event.stopPropagation()"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>card.onclick = () =&gt; document.getElementById(`input-${i}`).focus();</p>
+<p class="p1"><span class="Apple-converted-space">            </span>grid.appendChild(card);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function updateAmount(num, val) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const amt = parseFloat(val) || 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>amounts<span class="s1">[</span>num<span class="s1">]</span> = amt;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const card = document.getElementById(`card-${num}`);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (amt &gt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>card.classList.add('selected');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>card.classList.remove('selected');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>calculate();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function quickInputZodiac(zodiac) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const val = prompt(`<span class="s1">请输入生肖【</span>${zodiac}<span class="s1">】所有对应号码的快捷下注金额：</span>`, "");</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (val === null || val.trim() === "") return;</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>const amt = parseFloat(val) || 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const nums = zodiacRules<span class="s1">[</span>zodiac<span class="s1">]</span>;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>nums.forEach(n =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>amounts<span class="s1">[</span>n<span class="s1">]</span> = amt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const input = document.getElementById(`input-${n}`);</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const card = document.getElementById(`card-${n}`);</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (amt &gt; 0) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>input.value = amt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>card.classList.add('selected');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>} else {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>input.value = '';</p>
+<p class="p1"><span class="Apple-converted-space">                </span>card.classList.remove('selected');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>calculate();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function setFilter(f) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>currentFilter = f;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.querySelectorAll('.filter-btn').forEach(b =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const isMatch = (f === 'all' &amp;&amp; b.innerText === '<span class="s1">全部</span>') ||<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>(f === 'odd' &amp;&amp; b.innerText === '<span class="s1">单数</span>') ||<span class="Apple-converted-space"> </span></p>
+<p class="p1"><span class="Apple-converted-space">                            </span>(f === 'even' &amp;&amp; b.innerText === '<span class="s1">双数</span>');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>b.classList.toggle('active', isMatch);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>calculate();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function calculate() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let total = 0;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>let html = '';</p>
+<p class="p2"><span class="Apple-converted-space">        </span></p>
+<p class="p1"><span class="Apple-converted-space">        </span>for (let i = 1; i &lt;= 49; i++) {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const isSelected = document.getElementById(`card-${i}`).classList.contains('selected');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (!isSelected || amounts<span class="s1">[</span>i<span class="s1">]</span> &lt;= 0) continue;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>const isOdd = i % 2 !== 0;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (currentFilter === 'odd' &amp;&amp; !isOdd) continue;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>if (currentFilter === 'even' &amp;&amp; isOdd) continue;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">            </span>total += amounts<span class="s1">[</span>i<span class="s1">]</span>;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const padNum = i &lt; 10 ? '0' + i : i;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>html += `</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;div class="summary-item"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span&gt;<span class="s1">号码</span> &lt;strong&gt;${padNum}&lt;/strong&gt; (${numToZodiac<span class="s1">[</span>i<span class="s1">]</span>}) - ${isOdd ? '<span class="s1">单数</span>' : '<span class="s1">双数</span>'}&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>&lt;span&gt;&lt;strong&gt;${amounts<span class="s1">[</span>i<span class="s1">]</span>}&lt;/strong&gt; <span class="s1">元</span>&lt;/span&gt;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>`;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('totalSum').innerText = total.toFixed(2);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.getElementById('summaryList').innerHTML = html || '&lt;div style="color:#999; text-align:center; padding:10px;"&gt;<span class="s1">没有符合筛选条件的投注</span>&lt;/div&gt;';</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function resetAll() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>amounts = {};</p>
+<p class="p1"><span class="Apple-converted-space">        </span>document.querySelectorAll('.number-card').forEach(c =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>c.classList.remove('selected');</p>
+<p class="p1"><span class="Apple-converted-space">            </span>c.querySelector('input').value = '';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>});</p>
+<p class="p1"><span class="Apple-converted-space">        </span>calculate();</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>init();</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
 </body>
 </html>
